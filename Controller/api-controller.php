@@ -9,16 +9,20 @@ class apiController {
         $this -> apiView =new apiView();
     }
     function obtenerOfertas(){
-        if(isset($_GET['orden'])){
-            $tareas = $this->apiModel->obtenerOfertas();
-            $this->apiView->response($tareas, 200);
+        if(isset($_GET['order'])){
+            $orden= $_GET['order'];
+            $ofertas=$this -> apiModel -> obetnerOfertasXdescuento($orden);
+            $this->apiView->response($ofertas, 200);
+        }else {
+            $ofertas = $this->apiModel->obtenerOfertas();
+            $this->apiView->response($ofertas, 200);
         }
     }  
     function agregarOferta($params = []){
         $body = $this -> obtenerData();
         if(!empty($body->nombre) && !empty($body->descripcion) && !empty($body->descuento)){
             try {
-                $oferta = $this -> apiModel -> agregarProducto($body->nombre, $body->descripcion, $body->descuento);
+                $oferta = $this -> apiModel -> agregarProducto($body->nombre, $body->descripcion, $body->descuento,$body->id_categoria);
                 $this -> apiView -> response($oferta,201);
             } catch (\Throwable $th) {
                 $this -> apiView -> response("error la insertar la oferta",400);
@@ -38,7 +42,14 @@ class apiController {
     }
     function borrarOferta($params=null){
         $id=$params[':ID'];
-        $this -> Model -> borrarProducto($id);
+        $oferta = $this -> apiModel -> obtenerProducto_id($id);
+        if($oferta){
+            $this -> apiModel -> borrarProducto($id);
+            $this -> apiView -> response($oferta,200); 
+        }else{
+            $this -> apiView -> response("No existe una oferta con ese id",404); 
+        }
+        
     }  
     private function obtenerData(){
         return json_decode(file_get_contents("php://input"));

@@ -20,20 +20,24 @@ class apiModel
         $query =  $this->db->prepare('DELETE FROM `producto` WHERE id_producto=?');
         $query->execute([$id]);
     }
-    public function agregarProducto($nombre, $descripcion, $descuento){
-        $query = $this->db->prepare('INSERT INTO producto(nombre,descripcion,descuento) VALUES (?,?,?)');
-        $query->execute([$nombre, $descripcion, $descuento]);
+    public function agregarProducto($nombre, $descripcion, $descuento,$id_categoria){
+        $query = $this->db->prepare('INSERT INTO producto(nombre,descripcion,descuento,fk_categoria) VALUES (?,?,?,?)');
+        $query->execute([$nombre, $descripcion, $descuento, $id_categoria]);
+        $producto = $this -> obtenerProducto_id($this->db->lastInsertID());
+        return $producto; 
     }
     public function actualizarProducto($nombre, $descripcion, $descuento, $id){
         $query = $this->db->prepare("UPDATE producto SET nombre= ? ,descripcion= ? ,descuento=?WHERE id_producto=?");
         $query->execute([$nombre, $descripcion, $descuento, $id]);
     }
-    function obetnerOfertasXdescuento($orden = null){
+    function obetnerOfertasXdescuento($orden){
         $query = "SELECT * FROM producto";
         if ($orden == 'asc') {
             $query .= " ORDER BY descuento ASC";
-        } else {
+        } else if ($orden == 'desc'){
             $query .= " ORDER BY descuento DESC";
+        }else {
+            $query .= " ORDER BY id_producto ASC";
         }
         $sentencia = $this->db->prepare($query);
         $sentencia->execute();
